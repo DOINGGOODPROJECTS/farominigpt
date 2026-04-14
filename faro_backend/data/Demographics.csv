@@ -1,0 +1,18 @@
+city_id,City,black_population_percentage,housing_index
+atlanta_us,"Atlanta, GA",48,72
+houston_us,"Houston, TX",23,68
+dallas_us,"Dallas, TX",25,65
+charlotte_us,"Charlotte, NC",35,64
+raleigh_us,"Raleigh, NC",29,66
+durham_us,"Durham, NC",38,63
+memphis_us,"Memphis, TN",64,55
+washington_dc_us,"Washington, DC",45,85
+silver_spring_us,"Silver Spring, MD",28,82
+hyattsville_us,"Hyattsville, MD",36,78
+bowie_us,"Bowie, MD",60,80
+alexandria_us,"Alexandria, VA",22,88
+chicago_us,"Chicago, IL",29,70
+detroit_us,"Detroit, MI",77,50
+columbus_us,"Columbus, OH",28,60
+minneapolis_us,"Minneapolis, MN",19,72
+st_louis_us,"St. Louis, MO",46,58

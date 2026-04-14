@@ -1,0 +1,175 @@
+openapi: 3.1.0
+info:
+  title: Atlas Actions API
+  version: 1.0.0
+  description: GPT Actions endpoints for Atlas (recommendations + city comparisons).
+servers:
+  - url: https://atlasapi.solondev.com/api
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+security:
+  - bearerAuth: []
+paths:
+  /recommendations:
+    post:
+      operationId: postRecommendations
+      summary: Recommend U.S. cities
+      description: Returns a ranked list of recommended U.S. cities based on entrepreneur context.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                industry:
+                  type: string
+                stage:
+                  type: string
+                budget:
+                  type: number
+                timeline:
+                  type: string
+                priorities:
+                  type: array
+                  items:
+                    type: string
+                targetCustomer:
+                  type: string
+                shortlistCities:
+                  type: array
+                  items:
+                    type: string
+                notes:
+                  type: string
+      responses:
+        "200":
+          description: Recommended cities
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  cities:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: false
+                      properties:
+                        name:
+                          type: string
+                        score:
+                          type: integer
+                          minimum: 0
+                          maximum: 100
+                        why:
+                          type: string
+                      required: [name, score, why]
+                  followUps:
+                    type: array
+                    items:
+                      type: string
+                required: [cities]
+        "401":
+          description: Unauthorized
+        "502":
+          description: AI response invalid
+  /compare:
+    get:
+      operationId: getCompare
+      summary: Compare two U.S. cities
+      description: Compares two cities and returns a structured verdict with pros/cons and scores.
+      parameters:
+        - name: city1
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: city2
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: industry
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: budget
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: priorities
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: City comparison
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  city1:
+                    type: string
+                  city2:
+                    type: string
+                  summary:
+                    type: string
+                  verdict:
+                    type: string
+                  scores:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      city1:
+                        type: integer
+                        minimum: 0
+                        maximum: 100
+                      city2:
+                        type: integer
+                        minimum: 0
+                        maximum: 100
+                    required: [city1, city2]
+                  pros:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      city1:
+                        type: array
+                        items: { type: string }
+                      city2:
+                        type: array
+                        items: { type: string }
+                    required: [city1, city2]
+                  cons:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      city1:
+                        type: array
+                        items: { type: string }
+                      city2:
+                        type: array
+                        items: { type: string }
+                    required: [city1, city2]
+                  nextSteps:
+                    type: array
+                    items: { type: string }
+                required: [city1, city2, summary, verdict, scores, pros, cons]
+        "400":
+          description: Missing query params
+        "401":
+          description: Unauthorized
+        "502":
+          description: AI response invalid
+

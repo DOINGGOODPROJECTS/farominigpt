@@ -1,0 +1,18 @@
+city_id,City,cost_index,housing_index
+atlanta_us,"Atlanta, GA",95,92
+houston_us,"Houston, TX",90,85
+dallas_us,"Dallas, TX",94,90
+charlotte_us,"Charlotte, NC",92,88
+raleigh_us,"Raleigh, NC",91,87
+durham_us,"Durham, NC",90,85
+memphis_us,"Memphis, TN",82,75
+washington_dc_us,"Washington, DC",120,130
+silver_spring_us,"Silver Spring, MD",115,125
+hyattsville_us,"Hyattsville, MD",108,115
+bowie_us,"Bowie, MD",110,120
+alexandria_us,"Alexandria, VA",118,128
+chicago_us,"Chicago, IL",98,95
+detroit_us,"Detroit, MI",85,78
+columbus_us,"Columbus, OH",88,82
+minneapolis_us,"Minneapolis, MN",96,92
+st_louis_us,"St. Louis, MO",86,80

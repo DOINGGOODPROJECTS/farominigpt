@@ -1,0 +1,19 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "MiniGPT - Atlas",
+  "name_for_model": "mini_atlas",
+  "description_for_human": "MiniGPT wrapper for Atlas city recommendations and comparisons.",
+  "description_for_model": "Use this plugin to call Atlas endpoints for city recommendations and comparisons.",
+  "auth": {
+    "type": "service_http",
+    "authorization_type": "bearer"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://minigpt.farosmart.com/openapi.yaml",
+    "is_user_authenticated": false
+  },
+  "logo_url": "https://minigpt.farosmart.com/logo.svg",
+  "contact_email": "admin@farosmart.com",
+  "legal_info_url": "https://minigpt.farosmart.com/privacy"
+}

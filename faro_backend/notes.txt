@@ -1,0 +1,6 @@
+1. give users access to the AI chat. if they want to login
+
+2. add only us and uk cities
+3. remove the dashboard 
+priority adinkra fellowship
+traccar

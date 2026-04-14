@@ -1,0 +1,18 @@
+city_id,City,business_score,opportunity_score,network_strength
+atlanta_us,"Atlanta, GA",90,88,95
+houston_us,"Houston, TX",88,85,82
+dallas_us,"Dallas, TX",86,83,78
+charlotte_us,"Charlotte, NC",84,82,75
+raleigh_us,"Raleigh, NC",82,80,72
+durham_us,"Durham, NC",80,78,70
+memphis_us,"Memphis, TN",76,78,88
+washington_dc_us,"Washington, DC",92,85,94
+silver_spring_us,"Silver Spring, MD",82,80,85
+hyattsville_us,"Hyattsville, MD",80,78,83
+bowie_us,"Bowie, MD",78,76,80
+alexandria_us,"Alexandria, VA",86,80,82
+chicago_us,"Chicago, IL",90,85,90
+detroit_us,"Detroit, MI",78,82,88
+columbus_us,"Columbus, OH",80,78,75
+minneapolis_us,"Minneapolis, MN",84,80,70
+st_louis_us,"St. Louis, MO",76,78,80
