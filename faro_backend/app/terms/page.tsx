@@ -43,10 +43,11 @@ export default function TermsPage() {
         for your specific business needs. Always verify critical information independently.
       </p>
 
-      <h2>5. Professional Advice</h2>
+      <h2>5. No Business or Investment Advice</h2>
       <p>
-        The Service provides professional business recommendations and insights to help
-        entrepreneurs make informed decisions about business location and growth strategies.
+        The Service provides general information and recommendations. It does not constitute
+        professional business, legal, financial, or investment advice. Consult qualified
+        professionals for specific advice tailored to your situation.
       </p>
 
       <h2>6. Limitation of Liability</h2>
