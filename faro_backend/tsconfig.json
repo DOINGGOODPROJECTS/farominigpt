@@ -37,6 +37,8 @@
     "**/*.mts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "seed.ts",
+    "test-db-connection.js"
   ]
 }
