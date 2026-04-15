@@ -1,5 +1,5 @@
 export const metadata = {
-  title: 'Privacy Policy – Atlas MiniGPT',
+  title: 'Privacy Policy – Faro MiniGPT',
 };
 
 export default function PrivacyPage() {
@@ -12,9 +12,9 @@ export default function PrivacyPage() {
 
       <h2>1. What this service does</h2>
       <p>
-        Atlas MiniGPT is a ChatGPT Action that recommends and compares U.S. cities for
-        underrepresented entrepreneurs. Requests are forwarded to the Atlas AI engine and
-        a structured JSON response is returned to ChatGPT.
+        Faro MiniGPT is a ChatGPT Action that recommends and compares U.S. cities for
+        underrepresented entrepreneurs. It uses AI to return structured recommendations
+        directly inside ChatGPT.
       </p>
 
       <h2>2. Data we receive</h2>
@@ -33,8 +33,9 @@ export default function PrivacyPage() {
 
       <h2>4. Third-party services</h2>
       <p>
-        Responses are generated via a Make.com webhook connected to an AI model. Requests
-        sent to the webhook are subject to Make&apos;s own privacy policy.
+        Responses are generated using Google Gemini. In the event Gemini is unavailable,
+        requests may fall back to OpenAI or Anthropic Claude. Each provider&apos;s own
+        privacy policy governs their handling of data.
       </p>
 
       <h2>5. Security</h2>
@@ -51,7 +52,7 @@ export default function PrivacyPage() {
 
       <h2>7. Contact</h2>
       <p>
-        Questions? Email <a href="mailto:admin@farosmart.com">admin@farosmart.com</a>.
+        Questions? Email <a href="mailto:team@farosmart.com">team@farosmart.com</a>.
       </p>
     </main>
   );
