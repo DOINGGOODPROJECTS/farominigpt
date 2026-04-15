@@ -1,9 +1,9 @@
 {
   "schema_version": "v1",
-  "name_for_human": "MiniGPT - Atlas",
-  "name_for_model": "mini_atlas",
-  "description_for_human": "MiniGPT wrapper for Atlas city recommendations and comparisons.",
-  "description_for_model": "Use this plugin to call Atlas endpoints for city recommendations and comparisons.",
+  "name_for_human": "Faro MiniGPT",
+  "name_for_model": "faro_minigpt",
+  "description_for_human": "Faro helps underrepresented entrepreneurs find the best U.S. cities to start and grow their businesses.",
+  "description_for_model": "Use this plugin to recommend U.S. cities, compare cities, search grants, generate action plans, and chat with Faro for underrepresented entrepreneurs.",
   "auth": {
     "type": "service_http",
     "authorization_type": "bearer"
@@ -15,5 +15,5 @@
   },
   "logo_url": "https://minigpt.farosmart.com/logo.svg",
   "contact_email": "team@farosmart.com",
-  "legal_info_url": "https://minigpt.farosmart.com/privacy"
+  "legal_info_url": "https://farosmart.com/terms"
 }

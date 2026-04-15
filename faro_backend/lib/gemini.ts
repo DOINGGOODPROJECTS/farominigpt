@@ -174,7 +174,7 @@ async function callClaudeAgent(
       'content-type': 'application/json',
     },
     body: JSON.stringify({
-      agent_id: agentId,
+      agent: agentId,
       input: fullPrompt,
     }),
   });

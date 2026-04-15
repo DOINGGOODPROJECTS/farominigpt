@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
-  title: Atlas Actions API
+  title: Faro MiniGPT API
   version: 1.0.0
-  description: GPT Actions endpoints for Atlas (recommendations + city comparisons).
+  description: GPT Actions endpoints for Faro — city recommendations, comparisons, grants, and action plans for underrepresented entrepreneurs.
 servers:
   - url: https://minigpt.farosmart.com/api
 components:
@@ -13,11 +13,70 @@ components:
 security:
   - bearerAuth: []
 paths:
-  /recommendations:
+  /health:
+    get:
+      operationId: getHealth
+      summary: Health check
+      description: Returns ok if the API is live.
+      security: []
+      responses:
+        "200":
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+  /chat:
     post:
-      operationId: postRecommendations
+      operationId: postChat
+      summary: Chat with Faro
+      description: Send a message to Faro and get a conversational response about city relocation and entrepreneurship.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [message]
+              additionalProperties: false
+              properties:
+                message:
+                  type: string
+                history:
+                  type: array
+                  items:
+                    type: object
+                    additionalProperties: false
+                    properties:
+                      role:
+                        type: string
+                        enum: [user, assistant]
+                      content:
+                        type: string
+                    required: [role, content]
+      responses:
+        "200":
+          description: Chat reply
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reply:
+                    type: string
+        "401":
+          description: Unauthorized
+        "500":
+          description: Server error
+  /recommend:
+    post:
+      operationId: postRecommend
       summary: Recommend U.S. cities
-      description: Returns a ranked list of recommended U.S. cities based on entrepreneur context.
+      description: Returns a ranked list of U.S. cities based on entrepreneur context.
       requestBody:
         required: true
         content:
@@ -48,7 +107,7 @@ paths:
                   type: string
       responses:
         "200":
-          description: Recommended cities
+          description: City recommendations
           content:
             application/json:
               schema:
@@ -79,37 +138,30 @@ paths:
           description: Unauthorized
         "502":
           description: AI response invalid
-  /compare:
-    get:
-      operationId: getCompare
+  /compare-cities:
+    post:
+      operationId: postCompareCities
       summary: Compare two U.S. cities
-      description: Compares two cities and returns a structured verdict with pros/cons and scores.
-      parameters:
-        - name: city1
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: city2
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: industry
-          in: query
-          required: false
-          schema:
-            type: string
-        - name: budget
-          in: query
-          required: false
-          schema:
-            type: string
-        - name: priorities
-          in: query
-          required: false
-          schema:
-            type: string
+      description: Compares two cities with pros, cons, scores, and a verdict.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [city1, city2]
+              additionalProperties: false
+              properties:
+                city1:
+                  type: string
+                city2:
+                  type: string
+                industry:
+                  type: string
+                budget:
+                  type: string
+                priorities:
+                  type: string
       responses:
         "200":
           description: City comparison
@@ -129,45 +181,179 @@ paths:
                     type: string
                   scores:
                     type: object
-                    additionalProperties: false
                     properties:
                       city1:
                         type: integer
-                        minimum: 0
-                        maximum: 100
                       city2:
                         type: integer
-                        minimum: 0
-                        maximum: 100
-                    required: [city1, city2]
                   pros:
                     type: object
-                    additionalProperties: false
                     properties:
                       city1:
                         type: array
-                        items: { type: string }
+                        items:
+                          type: string
                       city2:
                         type: array
-                        items: { type: string }
-                    required: [city1, city2]
+                        items:
+                          type: string
                   cons:
                     type: object
-                    additionalProperties: false
                     properties:
                       city1:
                         type: array
-                        items: { type: string }
+                        items:
+                          type: string
                       city2:
                         type: array
-                        items: { type: string }
-                    required: [city1, city2]
+                        items:
+                          type: string
                   nextSteps:
                     type: array
-                    items: { type: string }
-                required: [city1, city2, summary, verdict, scores, pros, cons]
+                    items:
+                      type: string
         "400":
-          description: Missing query params
+          description: Missing city1 or city2
+        "401":
+          description: Unauthorized
+        "502":
+          description: AI response invalid
+  /grants/search:
+    post:
+      operationId: postGrantsSearch
+      summary: Search grants and funding
+      description: Returns relevant grants and funding programs for a given city, industry, and stage.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                city:
+                  type: string
+                industry:
+                  type: string
+                stage:
+                  type: string
+                keywords:
+                  type: string
+      responses:
+        "200":
+          description: Grants results
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  grants:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: false
+                      properties:
+                        name:
+                          type: string
+                        amount:
+                          type: string
+                        deadline:
+                          type: string
+                          nullable: true
+                        eligibility:
+                          type: string
+                        city:
+                          type: string
+                          nullable: true
+                        industry:
+                          type: string
+                          nullable: true
+                        link:
+                          type: string
+                          nullable: true
+                      required: [name, amount, eligibility]
+                  disclaimer:
+                    type: string
+                required: [grants, disclaimer]
+        "401":
+          description: Unauthorized
+        "502":
+          description: AI response invalid
+  /action-plan:
+    post:
+      operationId: postActionPlan
+      summary: Generate a city action plan
+      description: Generates a step-by-step relocation and business launch action plan for a specific city and industry.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [city, industry]
+              additionalProperties: false
+              properties:
+                city:
+                  type: string
+                industry:
+                  type: string
+                stage:
+                  type: string
+                budget:
+                  type: number
+                timeline:
+                  type: string
+                priorities:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        "200":
+          description: Action plan
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  city:
+                    type: string
+                  industry:
+                    type: string
+                  summary:
+                    type: string
+                  steps:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        order:
+                          type: integer
+                        action:
+                          type: string
+                        timeline:
+                          type: string
+                        resources:
+                          type: string
+                          nullable: true
+                  milestones:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        month:
+                          type: integer
+                        goal:
+                          type: string
+                  warnings:
+                    type: array
+                    items:
+                      type: string
+                    nullable: true
+                required: [city, industry, summary, steps, milestones]
+        "400":
+          description: Missing city or industry
         "401":
           description: Unauthorized
         "502":
