@@ -1,5 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 import OpenAI from 'openai';
+import Anthropic from '@anthropic-ai/sdk';
 
 const SYSTEM_INSTRUCTION = `
 You are Faro, an AI companion that helps underrepresented entrepreneurs discover the best places to start and grow their businesses.
@@ -87,6 +88,18 @@ function getOpenAI(): OpenAI {
   return _openai;
 }
 
+let _anthropic: Anthropic | null = null;
+function getAnthropic(): Anthropic {
+  if (!_anthropic) {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey || apiKey === 'your_anthropic_api_key_here') {
+      throw new Error('ANTHROPIC_API_KEY is not configured.');
+    }
+    _anthropic = new Anthropic({ apiKey });
+  }
+  return _anthropic;
+}
+
 const GEMINI_MODEL = 'gemini-2.5-flash';
 const OPENAI_FALLBACK_MODEL = 'gpt-4.1-nano';
 const MAX_RETRIES = 2;
@@ -135,67 +148,32 @@ async function callOpenAIFallback(
   return (response.choices[0]?.message?.content ?? '').trim();
 }
 
-async function callClaudeAgent(
+async function callClaude(
   message: string,
   profile: UserProfile,
   history: ConversationTurn[],
   systemInstruction?: string,
 ): Promise<string> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  const agentId = process.env.CLAUDE_AGENT_ID;
+  const client = getAnthropic();
+  const system = systemInstruction ?? buildSystemInstruction(profile);
 
-  if (!apiKey || apiKey === 'your_anthropic_api_key_here') {
-    throw new Error('ANTHROPIC_API_KEY is not configured.');
-  }
-  if (!agentId) {
-    throw new Error('CLAUDE_AGENT_ID is not configured.');
-  }
+  const messages: Anthropic.MessageParam[] = [
+    ...history.map((t) => ({
+      role: t.role === 'model' ? ('assistant' as const) : ('user' as const),
+      content: t.text,
+    })),
+    { role: 'user' as const, content: message },
+  ];
 
-  const systemContext = systemInstruction ?? buildSystemInstruction(profile);
-
-  const historyText = history
-    .map((t) => `${t.role === 'user' ? 'User' : 'Assistant'}: ${t.text}`)
-    .join('\n');
-
-  const fullPrompt = [
-    systemContext,
-    historyText ? `\nConversation so far:\n${historyText}` : '',
-    `\nUser: ${message}`,
-  ]
-    .filter(Boolean)
-    .join('\n');
-
-  const res = await fetch('https://api.anthropic.com/v1/sessions', {
-    method: 'POST',
-    headers: {
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'anthropic-beta': 'managed-agents-2026-04-01',
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({
-      agent: agentId,
-      input: fullPrompt,
-    }),
+  const response = await client.messages.create({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 1024,
+    system,
+    messages,
   });
 
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Claude agent error ${res.status}: ${err}`);
-  }
-
-  const data = (await res.json()) as {
-    output_text?: string;
-    output?: Array<{ content?: Array<{ text?: string }> }>;
-  };
-
-  const reply =
-    data.output_text ||
-    data.output?.[0]?.content?.[0]?.text ||
-    '';
-
-  if (!reply) throw new Error('Empty Claude agent response.');
-
+  const reply = response.content.find((b) => b.type === 'text')?.text ?? '';
+  if (!reply) throw new Error('Empty Claude response.');
   return reply.trim();
 }
 
@@ -245,7 +223,7 @@ export async function callGemini(
 
   try {
     return await withTimeout(
-      callClaudeAgent(message, profile, history, systemInstruction),
+      callClaude(message, profile, history, systemInstruction),
       CLAUDE_TIMEOUT_MS,
     );
   } catch (claudeError) {
