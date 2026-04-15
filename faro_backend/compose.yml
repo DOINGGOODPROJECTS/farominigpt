@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: atlas_backend
+    container_name: faro_minigpt_backend
     restart: unless-stopped
     env_file:
       - .env
