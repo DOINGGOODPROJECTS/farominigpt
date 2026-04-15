@@ -12,7 +12,7 @@ const extractBearer = (header: string | null): string | null => {
 };
 
 export const requireActionsApiKey = (request: Request) => {
-  const configuredKey = process.env.ATLAS_ACTIONS_API_KEY?.trim();
+  const configuredKey = process.env.FARO_ACTIONS_API_KEY?.trim();
   if (!configuredKey) {
     return NextResponse.json(
       { error: 'Actions API key is not configured.' },
