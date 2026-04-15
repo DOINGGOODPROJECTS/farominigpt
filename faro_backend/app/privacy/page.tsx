@@ -3,7 +3,7 @@ export const metadata = {
 };
 
 export default function PrivacyPage() {
-  const updated = 'April 15, 2025';
+  const updated = 'April 15, 2026';
 
   return (
     <main style={{ maxWidth: 720, margin: '0 auto', padding: '2rem 1rem', fontFamily: 'sans-serif', lineHeight: 1.7 }}>
@@ -12,9 +12,10 @@ export default function PrivacyPage() {
 
       <h2>1. What this service does</h2>
       <p>
-        Faro MiniGPT is a ChatGPT Action that recommends and compares U.S. cities for
-        underrepresented entrepreneurs. It uses AI to return structured recommendations
-        directly inside ChatGPT.
+        Faro is an AI companion that helps underrepresented entrepreneurs discover the
+        best places to start and grow their businesses—based on real opportunity, not
+        guesswork. It provides city recommendations, comparisons, grants, and actionable
+        insights directly inside ChatGPT.
       </p>
 
       <h2>2. Data we receive</h2>
