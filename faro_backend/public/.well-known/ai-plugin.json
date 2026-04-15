@@ -2,8 +2,8 @@
   "schema_version": "v1",
   "name_for_human": "Faro MiniGPT",
   "name_for_model": "faro_minigpt",
-  "description_for_human": "Faro helps underrepresented entrepreneurs find the best U.S. cities to start and grow their businesses.",
-  "description_for_model": "Use this plugin to recommend U.S. cities, compare cities, search grants, generate action plans, and chat with Faro for underrepresented entrepreneurs.",
+  "description_for_human": "Faro is an AI companion that helps underrepresented entrepreneurs discover the best places to start and grow their businesses—based on real opportunity, not guesswork.",
+  "description_for_model": "Faro is an AI companion that helps underrepresented entrepreneurs discover the best places to start and grow their businesses—based on real opportunity, not guesswork. Use this plugin to recommend U.S. cities, compare cities, search grants, and generate actionable insights for entrepreneurs.",
   "auth": {
     "type": "service_http",
     "authorization_type": "bearer"

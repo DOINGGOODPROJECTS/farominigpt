@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: Faro MiniGPT API
   version: 1.0.0
-  description: GPT Actions endpoints for Faro — city recommendations, comparisons, grants, and action plans for underrepresented entrepreneurs.
+  description: Faro is an AI companion that helps underrepresented entrepreneurs discover the best places to start and grow their businesses—based on real opportunity, not guesswork. API provides city recommendations, comparisons, grants, and actionable insights.
 servers:
   - url: https://minigpt.farosmart.com/api
 components:
