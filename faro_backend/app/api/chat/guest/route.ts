@@ -1,9 +1,5 @@
 import { NextResponse } from "next/server";
-import {
-  extractMakeAssistantText,
-  extractMakeError,
-  parseMakeWebhookResponse,
-} from "@/lib/make-webhook";
+import { callGemini } from "@/lib/gemini";
 
 export const runtime = "nodejs";
 
@@ -23,53 +19,9 @@ export async function POST(request: Request) {
       );
     }
 
-    const webhookUrl = process.env.MAKE_WEBHOOK_URL;
-    if (!webhookUrl) {
-      return NextResponse.json(
-        { error: "Guest chat is not configured." },
-        { status: 500 },
-      );
-    }
+    const reply = await callGemini(message);
 
-    const threadId = body.guestId?.trim()
-      ? `guest-${body.guestId.trim()}`
-      : "guest-anon";
-
-    const webhookResponse = await fetch(webhookUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(process.env.MAKE_WEBHOOK_API_KEY
-          ? { "x-make-apikey": process.env.MAKE_WEBHOOK_API_KEY }
-          : {}),
-      },
-      body: JSON.stringify({
-        message,
-        threadId,
-        user: {
-          id: threadId,
-          email: "",
-          name: "Guest",
-        },
-      }),
-    });
-
-    const raw = await webhookResponse.text();
-    const parsed = parseMakeWebhookResponse(raw);
-
-    if (!webhookResponse.ok) {
-      return NextResponse.json(
-        { error: extractMakeError(raw, parsed) || "Unable to get AI response." },
-        { status: webhookResponse.status },
-      );
-    }
-
-    const assistantText = extractMakeAssistantText(
-      raw,
-      parsed,
-    ) || "Thanks for the context. How can I help next?";
-
-    return NextResponse.json({ reply: assistantText });
+    return NextResponse.json({ reply });
   } catch (error) {
     return NextResponse.json(
       {

@@ -112,12 +112,13 @@ async function callOpenAIFallback(
   message: string,
   profile: UserProfile,
   history: ConversationTurn[],
+  systemInstruction?: string,
 ): Promise<string> {
   const openai = getOpenAI();
-  const systemInstruction = buildSystemInstruction(profile);
+  const resolvedInstruction = systemInstruction ?? buildSystemInstruction(profile);
 
   const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
-    { role: 'system', content: systemInstruction },
+    { role: 'system', content: resolvedInstruction },
     ...history.map((turn) => ({
       role: turn.role === 'user' ? ('user' as const) : ('assistant' as const),
       content: turn.text,
@@ -138,6 +139,7 @@ async function callClaudeAgent(
   message: string,
   profile: UserProfile,
   history: ConversationTurn[],
+  systemInstruction?: string,
 ): Promise<string> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   const agentId = process.env.CLAUDE_AGENT_ID;
@@ -149,7 +151,7 @@ async function callClaudeAgent(
     throw new Error('CLAUDE_AGENT_ID is not configured.');
   }
 
-  const systemContext = buildSystemInstruction(profile);
+  const systemContext = systemInstruction ?? buildSystemInstruction(profile);
 
   const historyText = history
     .map((t) => `${t.role === 'user' ? 'User' : 'Assistant'}: ${t.text}`)
@@ -201,6 +203,7 @@ export async function callGemini(
   message: string,
   profile: UserProfile = {},
   history: ConversationTurn[] = [],
+  systemInstruction?: string,
 ): Promise<string> {
   const ai = getGemini();
 
@@ -213,7 +216,7 @@ export async function callGemini(
   ];
 
   const config = {
-    systemInstruction: buildSystemInstruction(profile),
+    systemInstruction: systemInstruction ?? buildSystemInstruction(profile),
     temperature: 0.4,
   };
 
@@ -233,7 +236,7 @@ export async function callGemini(
   console.warn('[faro] Gemini failed → trying GPT-4.1-nano');
   try {
     return await withTimeout(
-      callOpenAIFallback(message, profile, history),
+      callOpenAIFallback(message, profile, history, systemInstruction),
       OPENAI_TIMEOUT_MS,
     );
   } catch (openaiError) {
@@ -242,7 +245,7 @@ export async function callGemini(
 
   try {
     return await withTimeout(
-      callClaudeAgent(message, profile, history),
+      callClaudeAgent(message, profile, history, systemInstruction),
       CLAUDE_TIMEOUT_MS,
     );
   } catch (claudeError) {

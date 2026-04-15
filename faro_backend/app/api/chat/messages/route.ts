@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { execute, query } from '@/lib/db';
 import { requireAuth } from '@/lib/auth-session';
 import type { ResultSetHeader } from 'mysql2/promise';
-import { extractMakeAssistantText, parseMakeWebhookResponse } from '@/lib/make-webhook';
+import { callGemini, type ConversationTurn, type UserProfile } from '@/lib/gemini';
 
 export const runtime = 'nodejs';
 
@@ -50,50 +50,41 @@ export async function POST(request: Request) {
       [sessionId, 'USER', message],
     );
 
-    const webhookUrl = process.env.MAKE_WEBHOOK_URL;
-    if (!webhookUrl) {
-      return NextResponse.json({ error: 'Make webhook is not configured.' }, { status: 500 });
-    }
+    // Fetch user profile for personalised responses
+    const profiles = await query<{
+      industry: string | null;
+      stage: string | null;
+      budgetRange: string | null;
+      relocationWindow: string | null;
+      priorities: string | null;
+      currentLocation: string | null;
+    }>('SELECT industry, stage, budgetRange, relocationWindow, priorities, currentLocation FROM `UserProfile` WHERE userId = ? LIMIT 1', [authUser.id]);
+    const profile: UserProfile = profiles[0] ?? {};
 
-    const users = await query<{ id: number; email: string; name: string | null }>(
-      'SELECT id, email, name FROM `User` WHERE id = ?',
-      [authUser.id],
+    // Fetch conversation history (exclude the message we just inserted)
+    const rows = await query<{ role: string; content: string }>(
+      'SELECT role, content FROM `ChatMessage` WHERE sessionId = ? ORDER BY createdAt ASC',
+      [sessionId],
     );
-    const user = users[0] || { id: authUser.id, email: '', name: null };
+    const history: ConversationTurn[] = rows
+      .slice(0, -1) // exclude the user message we just inserted
+      .map((r) => ({
+        role: r.role === 'ASSISTANT' ? ('model' as const) : ('user' as const),
+        text: r.content,
+      }));
 
-    const webhookResponse = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(process.env.MAKE_WEBHOOK_API_KEY
-          ? { 'x-make-apikey': process.env.MAKE_WEBHOOK_API_KEY }
-          : {}),
-      },
-      body: JSON.stringify({
-        message,
-        threadId: `user-${authUser.id}`,
-        user,
-      }),
-    });
-
-    const raw = await webhookResponse.text();
-    const parsed = parseMakeWebhookResponse(raw);
-    const assistantText = extractMakeAssistantText(raw, parsed) || 'Unable to get response.';
+    const reply = await callGemini(message, profile, history);
 
     await execute<ResultSetHeader>(
       'INSERT INTO `ChatMessage` (sessionId, role, content) VALUES (?, ?, ?)',
-      [sessionId, 'ASSISTANT', assistantText],
+      [sessionId, 'ASSISTANT', reply],
     );
-
     await execute<ResultSetHeader>(
       'UPDATE `ChatSession` SET updatedAt = CURRENT_TIMESTAMP WHERE id = ?',
       [sessionId],
     );
 
-    return NextResponse.json({
-      sessionId,
-      reply: assistantText,
-    });
+    return NextResponse.json({ sessionId, reply });
   } catch (error) {
     return NextResponse.json(
       { error: 'Failed to send chat message', details: String(error) },

@@ -1,12 +1,24 @@
 import { NextResponse } from 'next/server';
 import { requireActionsApiKey } from '@/lib/actions-auth';
-import {
-  extractMakeAssistantText,
-  extractMakeError,
-  parseMakeWebhookResponse,
-} from '@/lib/make-webhook';
+import { callGemini } from '@/lib/gemini';
 
 export const runtime = 'nodejs';
+
+const SYSTEM_INSTRUCTION = `
+You are Atlas, an AI decision engine that recommends U.S. cities for underrepresented entrepreneurs.
+
+Return ONLY valid JSON — no markdown, no code fences, no explanations.
+
+Schema:
+{
+  "cities": Array<{ "name": string, "score": number (0-100 integer), "why": string (1-2 sentences) }>,
+  "followUps"?: string[]
+}
+
+Rules:
+- Provide 3 to 6 cities.
+- If key context is missing, include "followUps" with up to 5 short clarifying questions.
+`.trim();
 
 type RecommendationRequest = {
   industry?: string;
@@ -30,29 +42,13 @@ type RecommendationResponse = {
   followUps?: string[];
 };
 
-const buildPrompt = (input: RecommendationRequest) => {
+const buildMessage = (input: RecommendationRequest): string => {
   const priorities = Array.isArray(input.priorities) ? input.priorities.filter(Boolean) : [];
   const shortlistCities = Array.isArray(input.shortlistCities)
     ? input.shortlistCities.filter(Boolean)
     : [];
 
-  return `
-You are Atlas, an AI decision engine that recommends U.S. cities for underrepresented entrepreneurs.
-
-Return ONLY valid JSON matching this TypeScript type (no markdown, no explanations):
-{
-  "cities": Array<{ "name": string, "score": number, "why": string }>,
-  "followUps"?: string[]
-}
-
-Rules:
-- Provide 3 to 6 cities.
-- "score" is 0-100 (integer).
-- "why" is 1-2 sentences, actionable and specific.
-- If key info is missing, include "followUps" with up to 5 short questions.
-
-Input:
-${JSON.stringify(
+  return JSON.stringify(
     {
       industry: input.industry || null,
       stage: input.stage || null,
@@ -65,8 +61,7 @@ ${JSON.stringify(
     },
     null,
     2,
-  )}
-`.trim();
+  );
 };
 
 export async function POST(request: Request) {
@@ -75,54 +70,14 @@ export async function POST(request: Request) {
 
   try {
     const body = (await request.json()) as RecommendationRequest;
-
-    const webhookUrl = process.env.MAKE_WEBHOOK_URL;
-    if (!webhookUrl) {
-      return NextResponse.json(
-        { error: 'Make webhook is not configured.' },
-        { status: 503 },
-      );
-    }
-
-    const webhookResponse = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(process.env.MAKE_WEBHOOK_API_KEY
-          ? { 'x-make-apikey': process.env.MAKE_WEBHOOK_API_KEY }
-          : {}),
-      },
-      body: JSON.stringify({
-        message: buildPrompt(body),
-        threadId: 'actions-recommendations',
-        user: { id: 'actions', email: '', name: 'Actions' },
-      }),
-    });
-
-    const raw = await webhookResponse.text();
-    const parsed = parseMakeWebhookResponse(raw);
-
-    if (!webhookResponse.ok) {
-      return NextResponse.json(
-        { error: extractMakeError(raw, parsed) || 'Unable to get AI response.' },
-        { status: webhookResponse.status },
-      );
-    }
-
-    const assistantText = extractMakeAssistantText(raw, parsed);
-    if (!assistantText) {
-      return NextResponse.json(
-        { error: 'No response returned.' },
-        { status: 502 },
-      );
-    }
+    const text = await callGemini(buildMessage(body), {}, [], SYSTEM_INSTRUCTION);
 
     let json: unknown;
     try {
-      json = JSON.parse(assistantText);
+      json = JSON.parse(text);
     } catch {
       return NextResponse.json(
-        { error: 'Recommendation response was not valid JSON.', raw: assistantText },
+        { error: 'Recommendation response was not valid JSON.', raw: text },
         { status: 502 },
       );
     }
@@ -135,4 +90,3 @@ export async function POST(request: Request) {
     );
   }
 }
-
