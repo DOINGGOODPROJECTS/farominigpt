@@ -104,7 +104,7 @@ const GEMINI_MODEL = 'gemini-2.5-flash';
 const OPENAI_FALLBACK_MODEL = 'gpt-4.1-nano';
 const MAX_RETRIES = 2;
 const RETRY_DELAY_MS = 3000;
-const GEMINI_TIMEOUT_MS = 10000;
+const GEMINI_TIMEOUT_MS = 20000;
 const OPENAI_TIMEOUT_MS = 12000;
 const CLAUDE_TIMEOUT_MS = 15000;
 
