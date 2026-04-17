@@ -100,7 +100,7 @@ function getAnthropic(): Anthropic {
   return _anthropic;
 }
 
-const GEMINI_MODEL = 'gemini-2.5-flash';
+const GEMINI_MODEL = 'gemini-2.5-flash-lite';
 const OPENAI_FALLBACK_MODEL = 'gpt-4.1-nano';
 const MAX_RETRIES = 2;
 const RETRY_DELAY_MS = 3000;
